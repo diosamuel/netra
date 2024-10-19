@@ -7,8 +7,8 @@ from playsound import playsound
 from util import Netra
 import serial
 import time
+from util import kosongin
 
-# Your main class handling the TabunganAppUI
 class TabunganAppUI:
     def __init__(self):
         self.isUserActive = False
@@ -17,13 +17,15 @@ class TabunganAppUI:
         self.root = tk.Tk()
         self.camera_label = Label(self.root)
         self.camera_label.pack()
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280/2)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720/2)
 
     def greet(self):
         threading.Thread(target=lambda: playsound("audio/greet.mp3"), daemon=True).start()
 
     def reset(self):
+        self.isUserActive=False
+        self.cameraResult=None
         threading.Thread(target=lambda: playsound("audio/greet.mp3"), daemon=True).start()
 
     def capture(self):
@@ -73,23 +75,23 @@ class TabunganAppUI:
                         Netra.tabung()
                     elif serialText == "btn.3":
                         Netra.laporan()
+                    elif serialText=="jarak.1" and not self.isUserActive:
+                        print("User Terdeteksi, Open App")
+                        self.isUserActive=True
+                        self.greet()
+                        self.show_camera()
+                        self.constructButton()
 
-
-        # Start a thread to listen to the serial input
         threading.Thread(target=listen_serial, daemon=True).start()
 
 # Initialize the app
+kosongin.empty_folder("D:/program/program/netra/captured_images")
+kosongin.empty_folder("D:/program/program/netra/audio/temp")
+print("INITIALIZE APP")
 Sistem = TabunganAppUI()
-Sistem.greet()
-Sistem.show_camera()
-Sistem.constructButton()
-
-# Start the serial listener in a separate thread
 Sistem.start_serial_listener()
-
-# Run the Tkinter mainloop (in the main thread)
+print("TKINTER RUNNING")
 Sistem.root.mainloop()
 
-# Release resources when the window closes
 Sistem.cap.release()
 cv2.destroyAllWindows()
