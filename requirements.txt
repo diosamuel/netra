@@ -1,0 +1,5 @@
+tk
+cv2
+playsound
+serial
+pillow
